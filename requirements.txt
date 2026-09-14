@@ -1,0 +1,14 @@
+# Core Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Medical Imaging (DICOM processing)
+pydicom>=2.4.0
+
+# Image Processing & Utilities
+Pillow>=9.5.0
+numpy>=1.24.0
+
+# Metrics & Data Visualization
+scikit-learn>=1.2.0
+matplotlib>=3.7.0

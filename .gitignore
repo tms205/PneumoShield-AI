@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Datasets (Prevent pushing raw / preprocessed image datasets)
+dataset/
+dataset_clean*/
+*.dcm
+
+# Model weights & Checkpoints (Prevent GitHub 100MB rejection)
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.bin
+*.onnx
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Logs
+*.log
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

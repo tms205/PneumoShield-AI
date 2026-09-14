@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PneumoShield AI - Phân loại ảnh X-quang Phổi Ensemble</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="brand">
+                <i class="fa-solid fa-shield-halved brand-icon"></i>
+                <div class="brand-text">
+                    <h1>PneumoShield <span class="accent-text">AI</span></h1>
+                    <p>Mô hình thử nghiệm phân loại viêm phổi qua ảnh X-quang</p>
+                </div>
+            </div>
+            <div class="system-status">
+                <span class="status-indicator online"></span>
+                <span class="status-text">Mô hình đã sẵn sàng suy luận</span>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY -->
+        <main class="dashboard-body">
+            <!-- SIDEBAR: CONFIGURATIONS -->
+            <section class="sidebar-config">
+                <!-- CARD 1: CẤU HÌNH MÔ HÌNH -->
+                <div class="card glass-card animate-slide-in">
+                    <h2 class="card-title"><i class="fa-solid fa-sliders icon-accent"></i> Cấu hình Mô hình</h2>
+                    
+                    <!-- Mode Selector Tab -->
+                    <div class="mode-tabs">
+                        <button id="tab-single" class="mode-tab active" onclick="setMode('single')">
+                            <i class="fa-solid fa-cube"></i> Đơn Mô Hình
+                        </button>
+                        <button id="tab-ensemble" class="mode-tab" onclick="setMode('ensemble')">
+                            <i class="fa-solid fa-cubes"></i> Ensemble (Kết hợp)
+                        </button>
+                    </div>
+
+                    <!-- Single Model Configurations -->
+                    <div id="single-config-panel" class="config-panel">
+                        <label class="input-label">Chọn Mô Hình Sử Dụng</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="single-model-select" value="efficientnet" checked onchange="updateSingleModelView()">
+                                <div class="radio-design"></div>
+                                <div class="radio-text">
+                                    <span class="model-name-main text-eff">EfficientNet-B4</span>
+                                    <span class="model-desc">Mô hình CNN tối ưu hóa tham số</span>
+                                </div>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="single-model-select" value="vit" onchange="updateSingleModelView()">
+                                <div class="radio-design"></div>
+                                <div class="radio-text">
+                                    <span class="model-name-main text-vit">ViT-B/16 (Transformer)</span>
+                                    <span class="model-desc">Cơ chế Attention học đặc trưng toàn cục</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Ensemble Configurations -->
+                    <div id="ensemble-config-panel" class="config-panel hidden">
+                        <label class="input-label">Thiết lập Trọng số Ensemble</label>
+                        <p class="panel-description">Điều chỉnh tỷ lệ đóng góp của từng mô hình vào kết quả chẩn đoán cuối cùng.</p>
+                        
+                        <!-- EfficientNet Weight Slider -->
+                        <div class="slider-container">
+                            <div class="slider-info">
+                                <span class="slider-label text-eff"><i class="fa-solid fa-circle-nodes"></i> Trọng số EfficientNet-B4:</span>
+                                <span id="val-eff-weight" class="slider-val text-eff">50%</span>
+                            </div>
+                            <input type="range" id="slider-eff" class="slider slider-eff-color" min="0" max="100" value="50" oninput="syncWeights('eff')">
+                        </div>
+
+                        <!-- ViT Weight Slider -->
+                        <div class="slider-container">
+                            <div class="slider-info">
+                                <span class="slider-label text-vit"><i class="fa-solid fa-shapes"></i> Trọng số ViT-B/16:</span>
+                                <span id="val-vit-weight" class="slider-val text-vit">50%</span>
+                            </div>
+                            <input type="range" id="slider-vit" class="slider slider-vit-color" min="0" max="100" value="50" oninput="syncWeights('vit')">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: MODEL METRICS -->
+                <div class="card glass-card animate-slide-in delay-1">
+                    <h2 class="card-title"><i class="fa-solid fa-chart-line icon-accent"></i> Hiệu năng Mô hình</h2>
+                    <div id="metrics-display">
+                        <!-- Content loaded dynamically via JS -->
+                        <div class="metric-row">
+                            <span class="metric-lbl">Độ chính xác (Test Acc):</span>
+                            <span id="metric-accuracy" class="metric-val">N/A</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-lbl">Chỉ số ROC AUC:</span>
+                            <span id="metric-auc" class="metric-val">N/A</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-lbl">Kích thước ảnh đầu vào:</span>
+                            <span id="metric-imgsize" class="metric-val">N/A</span>
+                        </div>
+                        <div class="metric-desc-box">
+                            <p id="metric-description">Đang tải cấu hình...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MAIN ZONE: DIAGNOSIS & PREVIEW -->
+            <section class="main-diagnosis-zone">
+                <!-- UPLOAD CARD -->
+                <div class="card glass-card drop-zone animate-fade-in" id="upload-card">
+                    <div class="drop-zone-content" id="drop-zone-prompt">
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <h3>Kéo thả ảnh X-quang phổi vào đây</h3>
+                        <p>Hỗ trợ tệp tin định dạng JPEG, JPG hoặc PNG</p>
+                        <span class="divider-text">HOẶC</span>
+                        <button class="btn btn-primary" onclick="triggerFileInput()"><i class="fa-solid fa-file-image"></i> Chọn ảnh từ thiết bị</button>
+                        <input type="file" id="file-input" class="hidden" accept="image/*" onchange="handleFileSelect(event)">
+                    </div>
+                    
+                    <!-- Preview Container (Hidden initially) -->
+                    <div class="preview-container hidden" id="preview-container">
+                        <img id="image-preview" src="" alt="X-ray Preview">
+                        <div class="preview-overlay">
+                            <button class="btn btn-secondary btn-sm" onclick="resetUpload()"><i class="fa-solid fa-trash"></i> Hủy ảnh</button>
+                            <button class="btn btn-accent btn-sm" id="btn-diagnose" onclick="runDiagnosis()"><i class="fa-solid fa-stethoscope"></i> Chẩn đoán ngay</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUICK DIAGNOSIS GALLERY (SAMPLES) -->
+                <div class="card glass-card animate-slide-in">
+                    <h2 class="card-title"><i class="fa-solid fa-images icon-accent"></i> Thư viện Ảnh mẫu Chẩn đoán nhanh</h2>
+                        <p class="panel-description">Ảnh mẫu chỉ dùng để minh họa suy luận, không đại diện cho độ chính xác trên toàn bộ tập test.</p>
+                    <div class="gallery-scroll">
+                        <div id="samples-gallery" class="gallery-grid">
+                            <!-- Loaded dynamically via JS -->
+                            <div class="gallery-placeholder">Đang tải danh sách ảnh mẫu từ server...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TRAINING OUTPUTS -->
+                <div class="card glass-card animate-slide-in">
+                    <h2 class="card-title"><i class="fa-solid fa-chart-column icon-accent"></i> Kết quả huấn luyện</h2>
+                    <p class="panel-description">Load ảnh output từ thư mục outputs_scratch.</p>
+                    <div id="training-outputs" class="training-outputs">
+                        <div class="gallery-placeholder">Đang tải output Scratch...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ANALYTICS PANEL (RESULTS) -->
+            <section class="analytics-panel">
+                <!-- RESULTS SUMMARY CARD -->
+                <div class="card glass-card results-card" id="results-card">
+                    <div class="result-placeholder" id="result-placeholder">
+                        <i class="fa-solid fa-wave-square pulse-icon"></i>
+                        <h3>Sẵn sàng phân tích</h3>
+                        <p>Hãy tải ảnh lên hoặc chọn ảnh mẫu để nhận kết quả phân tích AI</p>
+                    </div>
+
+                    <!-- LOADING STATE -->
+                    <div class="loading-state hidden" id="loading-state">
+                        <div class="spinner">
+                            <div class="double-bounce1"></div>
+                            <div class="double-bounce2"></div>
+                        </div>
+                        <h3>Đang phân tích hình ảnh...</h3>
+                        <p>Các mô hình học sâu đang thực hiện chẩn đoán trích xuất đặc trưng</p>
+                    </div>
+
+                    <!-- ACTUAL RESULTS -->
+                    <div class="results-content hidden" id="results-content">
+                        <h2 class="card-title text-center"><i class="fa-solid fa-square-poll-vertical icon-accent"></i> Kết quả phân tích</h2>
+                        
+                        <!-- Prediction tag -->
+                        <div id="pred-badge-container" class="prediction-badge-container">
+                            <span id="pred-badge" class="badge">NORMAL</span>
+                            <span id="pred-confidence" class="badge-confidence">99.8%</span>
+                        </div>
+
+                        <!-- Progress Bar for Pneumonia Probability -->
+                        <div class="prob-section">
+                            <div class="prob-header">
+                                <span>Xác suất Viêm phổi (PNEUMONIA):</span>
+                                <span id="prob-percentage" class="prob-pct-val">0%</span>
+                            </div>
+                            <div class="prob-bar-container">
+                                <div id="prob-bar" class="prob-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Info details -->
+                        <div class="diag-meta">
+                            <div class="meta-item">
+                                <span class="meta-lbl">Thời gian xử lý:</span>
+                                <span id="val-time-taken" class="meta-val">0.45s</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-lbl">Cấu hình:</span>
+                                <span id="val-active-config" class="meta-val">Ensemble</span>
+                            </div>
+                        </div>
+
+                        <hr class="card-divider">
+
+                        <!-- MODELS COMPARISON BREAKDOWN -->
+                        <h3 class="subsection-title"><i class="fa-solid fa-network-wired"></i> Phân tích chi tiết từng mô hình</h3>
+                        
+                        <!-- EfficientNet probability line -->
+                        <div class="model-breakdown-row">
+                            <div class="model-breakdown-meta">
+                                <span class="text-eff font-semibold"><i class="fa-solid fa-circle-nodes"></i> EfficientNet-B4:</span>
+                                <span id="breakdown-eff-pct" class="text-eff font-semibold">0%</span>
+                            </div>
+                            <div class="min-bar-container">
+                                <div id="breakdown-eff-bar" class="min-bar bar-eff-bg" style="width: 0%"></div>
+                            </div>
+                            <div class="model-breakdown-sub">
+                                <span>Trọng số đóng góp: <strong id="breakdown-eff-w">50%</strong></span>
+                                <span>Thời gian suy luận: <strong id="breakdown-eff-time">0.12s</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- ViT probability line -->
+                        <div class="model-breakdown-row">
+                            <div class="model-breakdown-meta">
+                                <span class="text-vit font-semibold"><i class="fa-solid fa-shapes"></i> Vision Transformer:</span>
+                                <span id="breakdown-vit-pct" class="text-vit font-semibold">0%</span>
+                            </div>
+                            <div class="min-bar-container">
+                                <div id="breakdown-vit-bar" class="min-bar bar-vit-bg" style="width: 0%"></div>
+                            </div>
+                            <div class="model-breakdown-sub">
+                                <span>Trọng số đóng góp: <strong id="breakdown-vit-w">50%</strong></span>
+                                <span>Thời gian suy luận: <strong id="breakdown-vit-time">0.31s</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Ensemble formula box -->
+                        <div class="formula-box">
+                            <h4>Công thức kết hợp Ensemble:</h4>
+                            <code id="ensemble-formula">
+                                P = (w1 * P1) + (w2 * P2) = ...
+                            </code>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- Script -->
+    <script src="app.js"></script>
+</body>
+</html>
